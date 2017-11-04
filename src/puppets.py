@@ -38,7 +38,7 @@ def on_event_key( event ):
 def clamp( value, min_value, max_value ):
 	return min( max_value, max( min_value, value) )
 
-def draw_puppet( index, screen, x, y, mouth_open, eye_direction):
+def draw_puppet( index, screen, x, y, mouth_open, eyes_direction_x, eyes_direction_y):
 	
 	PUPPET_COLOUR_FACE = RED
 	PUPPET_COLOUR_NOSE = GREEN
@@ -47,12 +47,6 @@ def draw_puppet( index, screen, x, y, mouth_open, eye_direction):
 		# 2nd puppet
 		PUPPET_COLOUR_FACE = BLUE
 		PUPPET_COLOUR_NOSE = YELLOW
-
-	"""
-	x_turn = clamp(int(100*eyes_direction), -50, 50)
-	max_radius = 40
-	pygame.draw.circle(screen, RED if (index==0) else BLUE, [x + x_turn, y], int(max_radius * mouth_open))
-	"""
 
 	# face (/main rectangle)
 	PUPPET_RADIUS = 80
@@ -88,9 +82,10 @@ def draw_puppet( index, screen, x, y, mouth_open, eye_direction):
 		PUPPET_EYE_DOT_WIDTH = 20
 		PUPPET_EYE_DOT_HEIGHT = 30
 
-		eye_dot_x = eye_x + clamp(40 * eyes_direction, -20, 20)
+		eye_dot_x = eye_x + clamp(40 * eyes_direction_x, -20, 20)
+		eye_dot_y = eye_y + clamp(40 * eyes_direction_y, -20, 20)
 
-		pygame.draw.rect(screen, BLACK, [eye_dot_x-PUPPET_EYE_DOT_WIDTH/2, eye_y-PUPPET_EYE_DOT_HEIGHT/2, PUPPET_EYE_DOT_WIDTH, PUPPET_EYE_DOT_HEIGHT])
+		pygame.draw.rect(screen, BLACK, [eye_dot_x-PUPPET_EYE_DOT_WIDTH/2, eye_dot_y-PUPPET_EYE_DOT_HEIGHT/2, PUPPET_EYE_DOT_WIDTH, PUPPET_EYE_DOT_HEIGHT])
 
 
 
@@ -129,13 +124,16 @@ while not done:
 		# mouth_open: 0 = closed, 1 = open
 		mouth_open = inv_g
 
-		# eye_direction: -1 = left, 0 = straight ahead, 1 = right
-		eyes_direction = clamp(direction.x, -1, 1)
+		# eyes_direction_x: -1 = left, 0 = straight ahead, 1 = right
+		eyes_direction_x = clamp(direction.x, -1, 1)
+
+		# eyes_direction_y: -1 = up, 0 = straight ahead, 1 = down
+		eyes_direction_y = 1 - clamp(direction.y, -1, 1)
 
 		x = (index+1) * 300
 		y = 500 - clamp( int(wrist.y), 0, 400 )
 
-		draw_puppet( index, screen, x, y, mouth_open, eyes_direction )
+		draw_puppet( index, screen, x, y, mouth_open, eyes_direction_x, eyes_direction_y )
 
 	# flip the backbuffer to the front buffer
 	pygame.display.flip()
