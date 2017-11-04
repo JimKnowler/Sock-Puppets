@@ -11,6 +11,9 @@ BLACK = (0,0,0)
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
+YELLOW = (255, 255, 0)
+PINK = (255, 0, 255)
+WHITE = (255, 255, 255)
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
@@ -35,6 +38,63 @@ def on_event_key( event ):
 def clamp( value, min_value, max_value ):
 	return min( max_value, max( min_value, value) )
 
+def draw_puppet( index, screen, x, y, mouth_open, eye_direction):
+	
+	PUPPET_COLOUR_FACE = RED
+	PUPPET_COLOUR_NOSE = GREEN
+
+	if index == 1:
+		# 2nd puppet
+		PUPPET_COLOUR_FACE = BLUE
+		PUPPET_COLOUR_NOSE = YELLOW
+
+	"""
+	x_turn = clamp(int(100*eyes_direction), -50, 50)
+	max_radius = 40
+	pygame.draw.circle(screen, RED if (index==0) else BLUE, [x + x_turn, y], int(max_radius * mouth_open))
+	"""
+
+	# face (/main rectangle)
+	PUPPET_RADIUS = 80
+	PUPPET_DIAMETER = 2 * PUPPET_RADIUS
+
+	pygame.draw.rect(screen, PUPPET_COLOUR_FACE, [x-PUPPET_RADIUS, y-PUPPET_RADIUS, PUPPET_DIAMETER, PUPPET_DIAMETER])
+
+	# nose
+	PUPPET_NOSE_WIDTH = 20
+	PUPPET_NOSE_HEIGHT = 40
+
+	pygame.draw.rect(screen, PUPPET_COLOUR_NOSE, [x-(PUPPET_NOSE_WIDTH/2),y-(PUPPET_NOSE_HEIGHT/2), PUPPET_NOSE_WIDTH, PUPPET_NOSE_HEIGHT])
+
+	# mouth
+	mouth_x = x
+	mouth_y = y + 40
+
+	PUPPET_MOUTH_WIDTH = 100
+	PUPPET_MOUTH_HEIGHT = int(60 * mouth_open)
+
+	pygame.draw.rect(screen, BLACK, [mouth_x - (PUPPET_MOUTH_WIDTH/2), mouth_y - (PUPPET_MOUTH_HEIGHT/2), PUPPET_MOUTH_WIDTH, PUPPET_MOUTH_HEIGHT])
+
+	# eyes
+	for eye_index in range(2):
+		PUPPET_EYE_RADIUS = 20
+		PUPPET_EYE_DIAMETER = 2 * PUPPET_EYE_RADIUS
+
+		eye_x = x + (( (eye_index*2)-1) * 40)
+		eye_y = y - 40
+
+		pygame.draw.rect(screen, WHITE, [eye_x-PUPPET_EYE_RADIUS,eye_y-PUPPET_EYE_RADIUS,PUPPET_EYE_DIAMETER, PUPPET_EYE_DIAMETER])
+
+		PUPPET_EYE_DOT_WIDTH = 20
+		PUPPET_EYE_DOT_HEIGHT = 30
+
+		eye_dot_x = eye_x + clamp(40 * eyes_direction, -20, 20)
+
+		pygame.draw.rect(screen, BLACK, [eye_dot_x-PUPPET_EYE_DOT_WIDTH/2, eye_y-PUPPET_EYE_DOT_HEIGHT/2, PUPPET_EYE_DOT_WIDTH, PUPPET_EYE_DOT_HEIGHT])
+
+
+
+
 done = False
 while not done:
 	# control framerate
@@ -56,11 +116,8 @@ while not done:
 
 	# clear the backbuffer
 	screen.fill(BLACK)
-	
-	# render to the backbuffer
-	#pygame.draw.rect(screen, RED, [10,10,30,20])
-	#pygame.draw.ellipse(screen, BLUE, [10,40,40,60])
 
+	# render a puppet for each hand
 	for index, hand in enumerate(hands):
 		g = hand.grab_strength		#	0.0 -> 1.0
 		g = clamp(g, 0.1, 1.0)
@@ -69,18 +126,16 @@ while not done:
 		wrist = hand.wrist_position
 		direction = hand.direction
 
-		max_radius = 40
+		# mouth_open: 0 = closed, 1 = open
+		mouth_open = inv_g
 
-		# left/right turn - by just using x component
-		x_turn = clamp(int(100*direction.x), -50, 50)
+		# eye_direction: -1 = left, 0 = straight ahead, 1 = right
+		eyes_direction = clamp(direction.x, -1, 1)
 
-		# left/right turn - by measuring angle on xz plane from 0,0,1
-		# note: need to sort out the math here..
-		#cos_angle = Leap.Vector(0,0,-1).dot( Leap.Vector(direction.x, 0, direction.y))
-		#angle = math.acos(cos_angle)
-		#x_turn = max(-50, min(50, int(angle * 100)))
+		x = (index+1) * 300
+		y = 500 - clamp( int(wrist.y), 0, 400 )
 
-		pygame.draw.circle(screen, RED, [(index+1)*300 + x_turn, 500 - int(wrist.y)], int(max_radius * inv_g))
+		draw_puppet( index, screen, x, y, mouth_open, eyes_direction )
 
 	# flip the backbuffer to the front buffer
 	pygame.display.flip()
