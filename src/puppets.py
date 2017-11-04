@@ -22,6 +22,7 @@ SCREEN_HEIGHT = 600
 controller = Leap.Controller()
 
 # initialise pygame
+pygame.mixer.pre_init( frequency=44100, buffer=4410 )
 pygame.init()
 
 # initialise the screen
@@ -31,6 +32,19 @@ pygame.display.set_caption("sock puppets!")
 # initialise the clock
 clock = pygame.time.Clock()
 FRAMES_PER_SECOND = 30
+
+# initialise the sounds
+with open("voice1.wav", "rb") as file:
+	voice1_sound = pygame.mixer.Sound(file)
+voice1_channel = None
+
+with open("voice2.wav", "rb") as file:
+	voice2_sound = pygame.mixer.Sound(file)
+voice2_channel = None
+
+sounds = [voice1_sound, voice2_sound]
+channels = [voice1_channel, voice2_channel]
+
 
 def on_event_key( event ):
 	print "on_event_key: " + str(event)
@@ -87,8 +101,16 @@ def draw_puppet( index, screen, x, y, mouth_open, eyes_direction_x, eyes_directi
 
 		pygame.draw.rect(screen, BLACK, [eye_dot_x-PUPPET_EYE_DOT_WIDTH/2, eye_dot_y-PUPPET_EYE_DOT_HEIGHT/2, PUPPET_EYE_DOT_WIDTH, PUPPET_EYE_DOT_HEIGHT])
 
+def play_puppet_sound(index):
+	global channels
 
-
+	channel = channels[index]
+	if channel and channel.get_busy():
+		pass
+	else:
+		sound = sounds[index]
+		channel = sound.play()
+		channels[index] = channel
 
 done = False
 while not done:
@@ -130,10 +152,16 @@ while not done:
 		# eyes_direction_y: -1 = up, 0 = straight ahead, 1 = down
 		eyes_direction_y = 1 - clamp(direction.y, -1, 1)
 
+		# render
 		x = (index+1) * 300
 		y = 500 - clamp( int(wrist.y), 0, 400 )
 
 		draw_puppet( index, screen, x, y, mouth_open, eyes_direction_x, eyes_direction_y )
+
+		# play sounds
+		if mouth_open > 0.8:
+			play_puppet_sound( index )
+
 
 	# flip the backbuffer to the front buffer
 	pygame.display.flip()
