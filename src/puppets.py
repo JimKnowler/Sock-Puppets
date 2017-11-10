@@ -147,10 +147,10 @@ while not done:
 		mouth_open = inv_g
 
 		# eyes_direction_x: -1 = left, 0 = straight ahead, 1 = right
-		eyes_direction_x = clamp(direction.x, -1, 1)
+		eyes_direction_x = clamp(direction.x, -0.5, 0.5) * 2
 
 		# eyes_direction_y: -1 = up, 0 = straight ahead, 1 = down
-		eyes_direction_y = 1 - clamp(direction.y, -1, 1)
+		eyes_direction_y = (1 - clamp(direction.y, -1, 1)) - 0.5;
 
 		# render
 		x = (index+1) * 300
